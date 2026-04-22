@@ -3,6 +3,7 @@
 
 // change if you choose to use a different header name
 #include "CampusCompass.h"
+#include "Student.h"
 
 using namespace std;
 
