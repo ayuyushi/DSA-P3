@@ -38,12 +38,18 @@ struct Compare //min heap
     }
 };
 
+struct classTime
+{
+    int start;
+    int end;
+};
 
 class CampusCompass {
 
     unordered_map<int, vector<Edge>> adj;
     unordered_map<int, string> locations;
     unordered_map<string, int> classToLocation;
+    unordered_map<string, classTime> classToTime;
     unordered_set<string> classCodes;
     StudentManager manager;
 
@@ -361,7 +367,6 @@ public:
 
         const int INF = numeric_limits<int>::max(); // c++ documentation; integer representation of infinity
 
-
         unordered_set<int> inMST;
         unordered_map<int, int> keys;
         for (auto &node : nodesGraph)
@@ -414,7 +419,7 @@ public:
     int studentZone(int& studentID)
     {
         Student* current = manager.getStudent(studentID);
-        if (!current) return {};
+        if (!current) return 0;
 
         int residence = current->getResidenceID();
         unordered_set<string> classes = current->getClasses();
@@ -422,48 +427,49 @@ public:
         unordered_map<int, int> parent;
         auto distance = Dijkstra(residence, parent);
 
-        const int INF = numeric_limits<int>::max(); // c++ documentation; integer representation of infinity
+        const int INF = numeric_limits<int>::max();
 
         unordered_set<int> nodesGraph;
-        unordered_map<int, vector<Edge>> edges;
         nodesGraph.insert(residence);
 
         for (auto &classCode : classes)
         {
-            int now = classToLocation.at(classCode);
+            if (classToLocation.find(classCode) == classToLocation.end())
+                continue;
+
+            int now = classToLocation[classCode];
 
             if (distance[now] == INF)
-            {
                 continue;
-            }
 
             int target = now;
 
-            while (target != residence && parent.find(target) != parent.end() && parent[target] != -1)
+            while (target != residence &&
+                   parent.find(target) != parent.end() &&
+                   parent[target] != -1)
             {
                 int par = parent[target];
+
                 nodesGraph.insert(target);
                 nodesGraph.insert(par);
-
-                for (auto& edge: adj[par])
-                {
-                    if (edge.neighbor == target && !edge.isClosed)
-                    {
-                        edges[par].push_back(edge);
-                    }
-                }
-
-                for (auto& edge: adj[target])
-                {
-                    if (edge.neighbor == par && !edge.isClosed)
-                    {
-                        edges[target].push_back(edge);
-                    }
-                }
 
                 target = par;
             }
         }
+
+        unordered_map<int, vector<Edge>> edges;
+
+        for (int u : nodesGraph)
+        {
+            for (auto &edge : adj[u])
+            {
+                if (nodesGraph.count(edge.neighbor) && !edge.isClosed)
+                {
+                    edges[u].push_back(edge);
+                }
+            }
+        }
+
         return PrimsMST(edges, nodesGraph);
     }
 
@@ -485,11 +491,13 @@ public:
 
             if (!(in >> id >> residence >> n))
             {
+                cout << "unsuccessful" << endl;
                 return "unsuccessful";
             }
 
             if (verifyName(name) == "unsuccessful")
             {
+                cout << "unsuccessful" << endl;
                 return "unsuccessful";
             }
 
@@ -500,36 +508,59 @@ public:
             {
                 if (!(in >> classCode))
                 {
+                    cout << "unsuccessful" << endl;
                     return "unsuccessful";
                 }
 
                 if (verifyClassCode(classCode) == "unsuccessful")
                 {
+                    cout << "unsuccessful" << endl;
                     return "unsuccessful";
                 }
 
                 classes.insert(classCode);
             }
 
-            if ((int)classes.size() != n)
+            if (static_cast<int>(classes.size()) != n)
             {
+                cout << "unsuccessful" << endl;
                 return "unsuccessful";
             }
 
-            return manager.insert(name, id, residence, classes)
-                   ? "successful"
-                   : "unsuccessful";
+            if (!(manager.insert(name, id, residence, classes)))
+            {
+                cout << "unsuccessful" << endl;
+                return "unsuccessful";
+            }
+            else
+            {
+                cout << "successful" << endl;
+                return "unsuccessful";
+
+            }
         }
 
     // remove
     else if (func == "remove")
     {
         int id;
-        if (!(in >> id)) return "unsuccessful";
+        if (!(in >> id))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
-        return manager.remove(id)
-               ? "successful"
-               : "unsuccessful";
+        if ( manager.remove(id))
+        {
+            cout << "successful" << endl;
+            return "successful";
+        }
+        else
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
+
     }
 
     // drop class
@@ -538,14 +569,28 @@ public:
         int id;
         string classCode;
 
-        if (!(in >> id >> classCode)) return "unsuccessful";
+        if (!(in >> id >> classCode))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
         if (verifyClassCode(classCode) == "unsuccessful")
+        {
+            cout << "unsuccessful" << endl;
             return "unsuccessful";
+        }
 
-        return manager.dropClass(id, classCode)
-               ? "successful"
-               : "unsuccessful";
+        if ( manager.dropClass(id, classCode))
+        {
+            cout << "successful" << endl;
+            return "successful";
+        }
+        else
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
     }
 
     // replace class
@@ -555,14 +600,27 @@ public:
         string oldCode, newCode;
 
         if (!(in >> id >> oldCode >> newCode))
+        {
+            cout << "unsuccessful" << endl;
             return "unsuccessful";
+        }
 
         if (verifyClassCode(newCode) == "unsuccessful")
+        {
+            cout << "unsuccessful" << endl;
             return "unsuccessful";
+        }
 
-        return manager.replaceClass(id, oldCode, newCode)
-               ? "successful"
-               : "unsuccessful";
+        if ( manager.replaceClass(id, oldCode, newCode))
+        {
+            cout << "successful" << endl;
+            return "successful";
+        }
+        else
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
     }
 
     // remove class in general
@@ -570,32 +628,52 @@ public:
     {
         string classCode;
 
-        if (!(in >> classCode)) return "unsuccessful";
+        if (!(in >> classCode))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
         if (verifyClassCode(classCode) == "unsuccessful")
+        {
+            cout << "unsuccessful" << endl;
             return "unsuccessful";
+        }
 
         int removed = manager.removeClass(classCode);
 
-        return (removed > 0) ? "successful" : "unsuccessful";
+        if (removed != 0)
+        {
+            cout << removed << endl;
+            return "succcessful";
+        }
+        else
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
     }
 
     // toggle edges
     else if (func == "toggleEdgesClosure")
     {
         int n;
-        if (!(in >> n)) return "unsuccessful";
+        if (!(in >> n))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
         vector<int> edges;
         int x;
 
         while (in >> x)
+        {
             edges.push_back(x);
-
-        if ((int)edges.size() != 2 * n)
-            return "unsuccessful";
+        }
 
         toggleEdgeClosure(n, edges);
+        cout << "successful" << endl;
         return "successful";
     }
 
@@ -603,7 +681,24 @@ public:
     else if (func == "checkEdgeStatus")
     {
         int x, y;
-        if (!(in >> x >> y)) return "unsuccessful";
+        if (!(in >> x >> y))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
+
+        cout << checkEdgeStatus(x, y) << endl;
+        return "successful";
+    }
+
+    else if (func == "toogleEdgesClosure")
+    {
+        int x, y;
+        if (!(in >> x >> y))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
         cout << checkEdgeStatus(x, y) << endl;
         return "successful";
@@ -613,24 +708,43 @@ public:
     else if (func == "isConnected")
     {
         int x, y;
-        if (!(in >> x >> y)) return "unsuccessful";
+        if (!(in >> x >> y))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
-        return isConnected(x, y)
-               ? "successful"
-               : "unsuccessful";
+        if ( isConnected(x, y))
+        {
+            cout << "successful" << endl;
+            return "successful";
+        }
+        else
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
+
     }
 
     // print shortest edges
     else if (func == "printShortestEdges")
     {
         int id;
-        if (!(in >> id)) return "unsuccessful";
+        if (!(in >> id))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
         Student* student = manager.getStudent(id);
-        if (!student) return "unsuccessful";
+        if (!student)
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
 
-        vector<string> classes(student->getClasses().begin(),
-                               student->getClasses().end());
+        vector<string> classes(student->getClasses().begin(), student->getClasses().end());
 
         sort(classes.begin(), classes.end());
 
@@ -651,6 +765,7 @@ public:
 
         if (!(in >> id))
         {
+            cout << "unsuccessful" << endl;
             return "unsuccessful";
         }
 
@@ -662,9 +777,7 @@ public:
         }
 
         int cost = studentZone(id);
-
-        cout << "Student Zone Cost: " << cost << endl;
-
+        cout << "Student Zone Cost For " << student->getName() << " : " << cost << endl;
         return "successful";
     }
 

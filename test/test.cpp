@@ -102,15 +102,15 @@
 // 	SECTION("dropClass") {
 // 		CampusCompass s;
 // 		s.ParseCSV("edges.csv", "classes.csv");
-// 		s.ParseCommand("insert \"Ayu\" 10000001 1 2 COP3502 MAC2311");
-// 		REQUIRE(s.ParseCommand("dropClass 10000001 COP3502") == "successful");
+// 		s.ParseCommand("insert \"Ayu\" 12345678 1 2 COP3502 MAC2311");
+// 		REQUIRE(s.ParseCommand("dropClass 12345678 COP3502") == "successful");
 // 	};
 //
 // 	SECTION("replaceClass") {
 // 		CampusCompass s;
 // 		s.ParseCSV("edges.csv", "classes.csv");
-// 		s.ParseCommand("insert \"Ayu\" 10000001 1 2 COP3502 MAC2311");
-// 		REQUIRE(s.ParseCommand("replaceClass 10000001 COP3502 COP3503") == "successful");
+// 		s.ParseCommand("insert \"Ayu\" 12345678 1 2 COP3502 MAC2311");
+// 		REQUIRE(s.ParseCommand("replaceClass 12345678 COP3502 COP3503") == "successful");
 // 	};
 //
 // 	SECTION("removeClass") {
