@@ -777,7 +777,7 @@ public:
         }
 
         int cost = studentZone(id);
-        cout << "Student Zone Cost For " << student->getName() << " : " << cost << endl;
+        cout << "Student Zone Cost For " << student->getName() << ": " << cost << endl;
         return "successful";
     }
 
