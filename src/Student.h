@@ -2,7 +2,6 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <vector>
 
 using namespace std;
 
@@ -15,6 +14,8 @@ class Student
 
     public:
 
+    Student() {}
+
     Student(const string &name, int studentID, int residenceID)
     {
         this->name = name;
@@ -22,7 +23,12 @@ class Student
         this->residenceID = residenceID;
     }
 
-    int getResidenceID()
+    string getName() const
+    {
+        return name;
+    }
+
+    int getResidenceID() const
     {
         return residenceID;
     }
@@ -63,14 +69,9 @@ class Student
         return true;
     }
 
-    vector<string> getClasses() const
+    const unordered_set<string>& getClasses() const
     {
-        vector<string> classes;
-        for (auto classCode : studentClasses)
-        {
-            classes.push_back(classCode);
-        }
-        return classes;
+        return studentClasses;
     }
 };
 
@@ -80,7 +81,7 @@ class StudentManager
 
     public:
 
-    StudentManager();
+    StudentManager() {}
 
     Student* getStudent(const int &studentID)
     {
@@ -91,7 +92,7 @@ class StudentManager
         return &(studentDatabase.find(studentID)->second);
     }
 
-    bool insert(string& studentName, int& studentID, int& residenceID, vector<string>& classes)
+    bool insert(string& studentName, int& studentID, int& residenceID, unordered_set<string>& classes)
       {
           if (studentDatabase.find(studentID) != studentDatabase.end())
           {
@@ -128,8 +129,6 @@ class StudentManager
             return false;
         }
 
-        studentDatabase.find(studentID)->second.removeClass(classCode);
-
         if (studentDatabase.find(studentID)->second.hasNoClasses())
         {
             studentDatabase.erase(studentID);
@@ -139,7 +138,7 @@ class StudentManager
 
     bool replaceClass(const int& studentID, const string &oldCode, const string &newCode)
     {
-        if (studentDatabase.find(studentID) != studentDatabase.end())
+        if (studentDatabase.find(studentID) == studentDatabase.end())
         {
             return false;
         }
@@ -165,8 +164,6 @@ class StudentManager
         }
         return studentNum;
     }
-
-
 
 };
 
