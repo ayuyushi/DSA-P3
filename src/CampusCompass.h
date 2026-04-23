@@ -340,7 +340,10 @@ public:
 
         for (auto &classCode : sortedClasses)
         {
-            int location = classToLocation.at(classCode);
+            if (classToLocation.find(classCode) == classToLocation.end())
+                continue;
+            int location = classToLocation[classCode];
+
             if (dist[location] == INF)
             {
                 distances.push_back(-1);
@@ -436,7 +439,7 @@ public:
 
             int target = now;
 
-            while (target != residence && parent[target] != -1)
+            while (target != residence && parent.find(target) != parent.end() && parent[target] != -1)
             {
                 int par = parent[target];
                 nodesGraph.insert(target);
