@@ -22,6 +22,10 @@ class Student
         this->residenceID = residenceID;
     }
 
+    int getResidenceID()
+    {
+        return residenceID;
+    }
 
     bool studentInClass(const string &classCode) const
     {
@@ -58,6 +62,16 @@ class Student
         studentClasses.insert(newCode);
         return true;
     }
+
+    vector<string> getClasses() const
+    {
+        vector<string> classes;
+        for (auto classCode : studentClasses)
+        {
+            classes.push_back(classCode);
+        }
+        return classes;
+    }
 };
 
 class StudentManager
@@ -67,6 +81,15 @@ class StudentManager
     public:
 
     StudentManager();
+
+    Student* getStudent(const int &studentID)
+    {
+        if (studentDatabase.find(studentID) == studentDatabase.end())
+        {
+            return nullptr;
+        }
+        return &(studentDatabase.find(studentID)->second);
+    }
 
     bool insert(string& studentName, int& studentID, int& residenceID, vector<string>& classes)
       {
@@ -142,6 +165,8 @@ class StudentManager
         }
         return studentNum;
     }
+
+
 
 };
 

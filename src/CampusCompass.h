@@ -4,8 +4,10 @@
 #include <unordered_set>
 #include <vector>
 #include <fstream>
+#include <queue>
 #include <sstream>
 #include "Student.h"
+#include <limits>
 
 using namespace std;
 
@@ -14,8 +16,23 @@ struct Edge
 {
     int neighbor;
     int weight;
+    bool isClosed = false;
 };
 
+
+struct Node
+{
+    int node;
+    int dist;
+};
+
+struct Compare //min heap
+{
+    bool operator()(const Node& n1, const Node& n2)
+    {
+        return n1.node > n2.node;
+    }
+};
 
 class CampusCompass {
 
@@ -76,11 +93,6 @@ public:
         return true;
     }
 
-    bool ParseCommand(const string &command)
-    {
-
-    }
-
     // helper function to check if class code is in classes.csv
     bool isValidClass(const string& classCode)
     {
@@ -89,6 +101,160 @@ public:
         }
         return true;
     }
+
+    Edge* findEdge(int u, int v)
+    {
+        for (auto &edge : adj[u])
+        {
+            if (edge.neighbor == v)
+            {
+                return &edge;
+            }
+        }
+        return nullptr;
+    }
+
+    bool isEdgeClosed(Edge& edge)
+    {
+        return edge.isClosed;
+    }
+
+    bool toggleEdgeClosure(int n, const vector<int> &edges)
+    {
+        for (int i = 0; i < 2 * n; i+=2)
+        {
+            int a = edges[i];
+            int b = edges[i+1];
+            Edge* e1 = findEdge(a, b);
+            Edge* e2 = findEdge(b, a);
+            if (e1)
+            {
+                e1->isClosed = !e1->isClosed;
+            }
+            if (e2)
+            {
+                e2->isClosed = !e2->isClosed;
+            }
+        }
+        return true;
+    }
+
+    string checkEdgeStatus(int locationX, int locationY)
+    {
+        Edge* edge = findEdge(locationX, locationY);
+        if (!edge)
+        {
+            return "DNE";
+        }
+        if (edge->isClosed)
+        {
+            return "closed";
+        }
+        return "open";
+    }
+
+    bool isConnected(int locationX, int locationY)
+    {
+        unordered_set<int> visited;
+        queue<int> check;
+
+        check.push(locationX);
+        visited.insert(locationX);
+
+        while (!check.empty())
+        {
+            int current = check.front();
+            check.pop();
+            if (current == locationY)
+            {
+                return true;
+            }
+            for (auto& edge : adj[current])
+            {
+                if (edge.isClosed)
+                {
+                    continue;
+                }
+                if (visited.find(edge.neighbor) == visited.end())
+                {
+                    check.push(edge.neighbor);
+                    visited.insert(edge.neighbor);
+                }
+            }
+        }
+        return false;
+    }
+
+    unordered_map<int, int> Dijkstra(int start)
+    {
+        unordered_map<int, int> distance;
+        unordered_set<int> visited;
+
+        for (auto &edge : adj)
+        {
+            distance[edge.first] = std::numeric_limits<int>::max(); // c++ documentation; integer representation of infinity
+        }
+        priority_queue <Node, vector<Node>, Compare> openSet; //c++ documentation
+
+        distance[start] = 0;
+        openSet.push({start, 0});
+        while (!openSet.empty())
+        {
+            Node current = openSet.top();
+            openSet.pop();
+            int u = current.node;
+            if (visited.count(u))
+            {
+                continue;
+            }
+            visited.insert(u);
+            for (auto &edge : adj[u])
+            {
+                if (edge.isClosed)
+                {
+                    continue;
+                }
+
+                int v = edge.neighbor;
+                int w = edge.weight;
+
+                if (distance[u]!= numeric_limits<int>::max() && distance[v] > distance[u] + 0w...00
+            }
+        }
+        return distance;
+
+    }
+
+
+
+    int shortestEdges(int& studentID)
+    {
+        Student* current = manager.getStudent(studentID);
+        vector<string> classes = current->getClasses();
+        int residence = current->getResidenceID();
+        return -1;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    bool ParseCommand(const string &command)
+    {
+        return false;
+    }
+
 };
 
 
