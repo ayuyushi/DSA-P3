@@ -603,6 +603,13 @@ public:
             }
 
             unordered_set<string> classes;
+
+            if (classes.size() > 6)
+            {
+                cout << "unsuccessful" << endl;
+                return "unsuccessful";
+            }
+
             string classCode;
 
 
