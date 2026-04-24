@@ -401,7 +401,6 @@ public:
     }
 
     // helper function
-    // used lecture slides as a refernce
     int PrimsMST(unordered_map<int, vector<Edge>> edges, unordered_set<int> nodesGraph)
     {
 
