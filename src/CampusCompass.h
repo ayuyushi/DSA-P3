@@ -15,7 +15,7 @@
 
 using namespace std;
 
-
+// edge struct for path finding
 struct Edge
 {
     int neighbor;
@@ -23,14 +23,16 @@ struct Edge
     bool isClosed = false;
 };
 
-
+// node struc for path finding
 struct Node
 {
     int node;
     int dist;
 };
 
-struct Compare //min heap
+// simulates min heap for path finding
+// compares node distances
+struct Compare
 {
     bool operator()(const Node& n1, const Node& n2)
     {
@@ -38,23 +40,40 @@ struct Compare //min heap
     }
 };
 
+// time struct to store class times
 struct classTime
 {
     int start;
     int end;
 };
 
+// compare struct to compare class start times
+struct CompareByStart {
+    const unordered_map<string, classTime>& classToTime;
+
+    bool operator()(const string& a, const string& b) const {
+        return classToTime.at(a).start < classToTime.at(b).start;
+    }
+};
+
+
 class CampusCompass {
 
-    unordered_map<int, vector<Edge>> adj;
-    unordered_map<int, string> locations;
-    unordered_map<string, int> classToLocation;
-    unordered_map<string, classTime> classToTime;
-    unordered_set<string> classCodes;
+    unordered_map<int, vector<Edge>> adj; // campus graph
+    unordered_map<int, string> locations; // stores locations
+    unordered_map<string, int> classToLocation; // maps classes to locations
+    unordered_map<string, classTime> classToTime; // maps classes to times
+    unordered_set<string> classCodes; // stores class codes
     StudentManager manager;
 
 public:
     CampusCompass() {}
+
+    // return student object
+    Student* getStudent(int id)
+    {
+        return manager.getStudent(id);
+    }
 
     // verifies if UF ID is valid
     string verifyNum(const string& number)
@@ -75,7 +94,7 @@ public:
         return number;
     }
 
-    // helper function to verify if name is valid
+    // verify if name is valid
     string verifyName(const string& name)
     {
         string test = "unsuccessful";
@@ -95,7 +114,7 @@ public:
         return name;
     }
 
-    // helper function to verify if class code is valid
+    // verify if class code is valid
     string verifyClassCode(const string& classCode)
     {
         // class code must be 7 characters
@@ -129,8 +148,10 @@ public:
         return classCode;
     }
 
+    // parses through edges.csv and classes.csv and extracts appropriate data
     bool ParseCSV(const string &edges_filepath, const string &classes_filepath)
     {
+        // classes.csv
         ifstream classfile(classes_filepath);
         if (!classfile.is_open())
         {
@@ -141,14 +162,24 @@ public:
         while (getline(classfile, line))
         {
             stringstream ss(line);
-            string classCode;
-            string classLocation;
+            string classCode, classLocation, startStr, endStr;
             getline(ss, classCode, ',');
             getline(ss, classLocation, ',');
+            getline(ss, startStr, ',');
+            getline(ss, endStr, ',');
+
             classCodes.insert(classCode);
             classToLocation[classCode] = stoi(classLocation);
+
+            auto toMinutes = [](const string& t) {
+                int h = stoi(t.substr(0, 2));
+                int m = stoi(t.substr(3, 2));
+                return h * 60 + m;
+            };
+            classToTime[classCode] = {toMinutes(startStr), toMinutes(endStr)};
         }
 
+        // edges.csv
         ifstream edgefile(edges_filepath);
         if (!edgefile.is_open())
         {
@@ -191,6 +222,7 @@ public:
         return true;
     }
 
+    // finds existing edges
     Edge* findEdge(int u, int v)
     {
         for (auto &edge : adj[u])
@@ -203,11 +235,13 @@ public:
         return nullptr;
     }
 
+    // checks if edge is closed
     bool isEdgeClosed(Edge& edge)
     {
         return edge.isClosed;
     }
 
+    // toggles edge stage
     bool toggleEdgeClosure(int n, const vector<int> &edges)
     {
         for (int i = 0; i < 2 * n; i+=2)
@@ -228,6 +262,7 @@ public:
         return true;
     }
 
+    // checks edge stage
     string checkEdgeStatus(int locationX, int locationY)
     {
         Edge* edge = findEdge(locationX, locationY);
@@ -242,6 +277,7 @@ public:
         return "open";
     }
 
+    // are two locations connected? return true if path is found and false if not
     bool isConnected(int locationX, int locationY)
     {
         unordered_set<int> visited;
@@ -274,6 +310,8 @@ public:
         return false;
     }
 
+    // helper function for Dijkstra's algo
+    // used my project 2 (maze runners) as a reference
     unordered_map<int, int> Dijkstra(int start, unordered_map<int, int>& parent)
     {
         const int INF = numeric_limits<int>::max(); // c++ documentation; integer representation of infinity
@@ -328,7 +366,7 @@ public:
         return distance;
     }
 
-
+    // returns the shortest distance from a vector of classes
     vector<int> shortestEdges(int& studentID, const vector<string>& sortedClasses)
     {
         const int INF = numeric_limits<int>::max(); // c++ documentation; integer representation of infinity
@@ -362,6 +400,8 @@ public:
         return distances;
     }
 
+    // helper function
+    // used lecture slides as a refernce
     int PrimsMST(unordered_map<int, vector<Edge>> edges, unordered_set<int> nodesGraph)
     {
 
@@ -377,7 +417,7 @@ public:
         keys[start] = 0;
         int total = 0;
 
-        for (int i = 0; i < (int)nodesGraph.size(); i++)
+        for (int i = 0; i < static_cast<int>(nodesGraph.size()); i++)
         {
             int u = -1;
             int best = INF;
@@ -415,7 +455,7 @@ public:
         return total;
     }
 
-
+    // helper function for studentZone
     int studentZone(int& studentID)
     {
         Student* current = manager.getStudent(studentID);
@@ -473,6 +513,57 @@ public:
         return PrimsMST(edges, nodesGraph);
     }
 
+    // extra credit method
+    string verifySchedule(int studentID)
+    {
+        Student* student = manager.getStudent(studentID);
+        if (!student)
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
+
+        const auto& classes = student->getClasses();
+
+        if (classes.size() < 2)
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
+
+        vector<string> sorted(classes.begin(), classes.end());
+        sort(sorted.begin(), sorted.end(), CompareByStart{classToTime});
+
+        cout << "Schedule Check for " << student->getName() << ":" << endl;
+
+        for (size_t i = 0; i + 1 < sorted.size(); i++)
+        {
+            const string& from = sorted[i];
+            const string& to   = sorted[i + 1];
+
+            int fromLoc = classToLocation[from];
+            int toLoc   = classToLocation[to];
+
+            int gap = classToTime[to].start - classToTime[from].end;
+
+            unordered_map<int, int> parent;
+            auto dist = Dijkstra(fromLoc, parent);
+
+            const int INF = numeric_limits<int>::max();
+            int pathTime = (dist.count(toLoc) && dist[toLoc] != INF) ? dist[toLoc] : INF;
+
+            if (gap >= pathTime)
+                cout << from << " - " << to << ": successful" << endl;
+            else
+                cout << from << " - " << to << ": unsuccessful" << endl;
+        }
+
+        return "successful";
+    }
+
+    // function to parse commands
+    // i put this function in campuscompass.h so that main.cpp does not directly interact with objects from internal memory
+    // referenced project 1 for parsing help
 
     string ParseCommand(const string &command)
 {
@@ -487,13 +578,23 @@ public:
             getline(in, temp, '"');
             getline(in, name, '"');
 
+            string idStr;
             int id, residence, n;
 
-            if (!(in >> id >> residence >> n))
+            if (!(in >> idStr >> residence >> n))
             {
                 cout << "unsuccessful" << endl;
                 return "unsuccessful";
             }
+
+            if (verifyNum(idStr) == "unsuccessful")
+            {
+                cout << "unsuccessful" << endl;
+                return "unsuccessful";
+            }
+
+            id = stoi(idStr);
+
 
             if (verifyName(name) == "unsuccessful")
             {
@@ -503,6 +604,7 @@ public:
 
             unordered_set<string> classes;
             string classCode;
+
 
             for (int i = 0; i < n; i++)
             {
@@ -518,14 +620,15 @@ public:
                     return "unsuccessful";
                 }
 
+                if (classes.find(classCode) != classes.end())
+                {
+                    cout << "unsuccessful" << endl;
+                    return "unsuccessful";
+                }
+
                 classes.insert(classCode);
             }
 
-            if (static_cast<int>(classes.size()) != n)
-            {
-                cout << "unsuccessful" << endl;
-                return "unsuccessful";
-            }
 
             if (!(manager.insert(name, id, residence, classes)))
             {
@@ -535,7 +638,7 @@ public:
             else
             {
                 cout << "successful" << endl;
-                return "unsuccessful";
+                return "successful";
 
             }
         }
@@ -645,7 +748,7 @@ public:
         if (removed != 0)
         {
             cout << removed << endl;
-            return "succcessful";
+            return "successful";
         }
         else
         {
@@ -687,21 +790,9 @@ public:
             return "unsuccessful";
         }
 
-        cout << checkEdgeStatus(x, y) << endl;
-        return "successful";
-    }
-
-    else if (func == "toogleEdgesClosure")
-    {
-        int x, y;
-        if (!(in >> x >> y))
-        {
-            cout << "unsuccessful" << endl;
-            return "unsuccessful";
-        }
-
-        cout << checkEdgeStatus(x, y) << endl;
-        return "successful";
+        string result = checkEdgeStatus(x, y);
+        cout << result << endl;
+        return result;
     }
 
     // is connected
@@ -753,7 +844,9 @@ public:
         cout << "Time For Shortest Edges: " << student->getName() << endl;
 
         for (size_t i = 0; i < classes.size(); i++)
+        {
             cout << classes[i] << ": " << distances[i] << endl;
+        }
 
         return "successful";
     }
@@ -781,7 +874,19 @@ public:
         return "successful";
     }
 
-    // ---------------- INVALID ----------------
+    // extra credit function
+    else if (func == "verifySchedule")
+    {
+        int id;
+        if (!(in >> id))
+        {
+            cout << "unsuccessful" << endl;
+            return "unsuccessful";
+        }
+        return verifySchedule(id);
+    }
+
+    // invalid commands
     else
     {
         cout << "unsuccessful" << endl;
@@ -789,7 +894,4 @@ public:
     }
 }
 
-
 };
-
-

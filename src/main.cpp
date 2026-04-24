@@ -5,10 +5,10 @@
 using namespace std;
 
 int main() {
-    // initialize your main project object
+    // initialize main project object
     CampusCompass compass;
 
-    // ingest CSV data
+    // break if CSV data does not exist
     if (!compass.ParseCSV("data/edges.csv", "data/classes.csv"))
     {
         return -1;
@@ -27,10 +27,8 @@ int main() {
         {
             continue;
         }
+        // parse command is a function within campuscompass.h that handles command processing
         compass.ParseCommand(line);
         commands--;
     }
 }
-
-
-

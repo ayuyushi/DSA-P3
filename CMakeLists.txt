@@ -25,9 +25,6 @@ add_executable(Main
         src/CampusCompass.h
         src/Student.h
         src/Student.h
-        src/Verify.h
-        src/Verify.h
-        src/Verify.h
         # add your own header files below - should be automatically added in CLion
         # example (can also separate with newlines):
         # src/AVL.h src/AVL.cpp
@@ -39,8 +36,6 @@ add_executable(Tests
         src/CampusCompass.cpp
         src/CampusCompass.h
         src/Student.h
-        src/Verify.h
-        src/Verify.h
         # add your own header files below - should be automatically added in CLion
         # example (can also separate with newlines):
         # src/AVL.h src/AVL.cpp

@@ -16,6 +16,7 @@ class Student
 
     Student() {}
 
+    // initialized constructor
     Student(const string &name, int studentID, int residenceID)
     {
         this->name = name;
@@ -23,21 +24,25 @@ class Student
         this->residenceID = residenceID;
     }
 
+    // return name
     string getName() const
     {
         return name;
     }
 
+    // return residence ID
     int getResidenceID() const
     {
         return residenceID;
     }
 
+    // is student in the class? return true if yes and false if no
     bool studentInClass(const string &classCode) const
     {
         return (studentClasses.find(classCode) != studentClasses.end());
     }
 
+    // add student to class
     bool addClass(const string &classCode)
     {
         if (studentInClass(classCode))
@@ -48,16 +53,19 @@ class Student
         return true;
     }
 
+    // remove student from class
     bool removeClass(const string &classCode)
     {
         return (studentClasses.erase(classCode) > 0);
     }
 
+    // does the student have no classes? return true if yes and false if no
     bool hasNoClasses() const
     {
         return (studentClasses.empty());
     }
 
+    // helper function to replace classes
     bool replaceClassHelper(const string &oldCode, const string &newCode)
     {
         if (!(studentInClass(oldCode)) || studentInClass(newCode))
@@ -69,12 +77,14 @@ class Student
         return true;
     }
 
+    // return the set of classes
     const unordered_set<string>& getClasses() const
     {
         return studentClasses;
     }
 };
 
+// manager class for more complex methods
 class StudentManager
 {
     unordered_map<int, Student> studentDatabase;
@@ -83,6 +93,7 @@ class StudentManager
 
     StudentManager() {}
 
+    // return student object if student exists
     Student* getStudent(const int &studentID)
     {
         if (studentDatabase.find(studentID) == studentDatabase.end())
@@ -92,6 +103,7 @@ class StudentManager
         return &(studentDatabase.find(studentID)->second);
     }
 
+    // insert student into database
     bool insert(string& studentName, int& studentID, int& residenceID, unordered_set<string>& classes)
       {
           if (studentDatabase.find(studentID) != studentDatabase.end())
@@ -107,6 +119,7 @@ class StudentManager
           return true;
       }
 
+    // remove student from database
     bool remove(int& studentID)
     {
         if (studentDatabase.find(studentID) != studentDatabase.end())
@@ -117,6 +130,7 @@ class StudentManager
         return false;
     }
 
+    // remove a class from a student
     bool dropClass(const int& studentID, const string& classCode)
     {
         if (studentDatabase.find(studentID) == studentDatabase.end())
@@ -136,6 +150,7 @@ class StudentManager
         return true;
     }
 
+    // replace a class from a student
     bool replaceClass(const int& studentID, const string &oldCode, const string &newCode)
     {
         if (studentDatabase.find(studentID) == studentDatabase.end())
@@ -164,6 +179,4 @@ class StudentManager
         }
         return studentNum;
     }
-
 };
-
