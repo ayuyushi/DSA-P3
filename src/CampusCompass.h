@@ -586,6 +586,11 @@ public:
                 return "unsuccessful";
             }
 
+            if (n <= 0 || n >= 6)
+            {
+                cout << "unsuccessful" << endl;
+                return "unsuccessful";
+            }
             if (verifyNum(idStr) == "unsuccessful")
             {
                 cout << "unsuccessful" << endl;
